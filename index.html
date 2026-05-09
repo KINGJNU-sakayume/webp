@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)" />
+  <title>WebP 변환기</title>
+  <meta name="description" content="WebP 파일을 iOS 사진앱에서 재생 가능한 형식(MP4·JPEG)으로 변환합니다." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📷%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <noscript>
+    <div class="noscript">이 앱은 자바스크립트가 필요합니다. 브라우저 설정에서 자바스크립트를 활성화해주세요.</div>
+  </noscript>
+
+  <main class="container">
+    <header class="hero">
+      <h1>WebP 변환기</h1>
+      <p class="tagline">WebP 파일을 iOS 사진앱에서 재생 가능한 형식으로 변환합니다</p>
+    </header>
+
+    <section
+      id="dropzone"
+      class="dropzone"
+      role="button"
+      tabindex="0"
+      aria-label="WebP 파일 선택"
+    >
+      <div class="dropzone-inner">
+        <div class="dropzone-icon" aria-hidden="true">⬆︎</div>
+        <p class="dropzone-text">여기에 WebP 파일을 끌어다 놓거나 클릭해서 선택하세요</p>
+        <p class="dropzone-hint">애니메이션 → MP4 · 정지 이미지 → JPEG</p>
+      </div>
+      <input
+        id="fileInput"
+        type="file"
+        accept="image/webp,.webp"
+        multiple
+        hidden
+      />
+    </section>
+
+    <section id="batchActions" class="batch-actions" hidden>
+      <button id="downloadAllBtn" class="btn btn-primary" type="button">전체 다운로드 (ZIP)</button>
+      <button id="clearAllBtn" class="btn btn-ghost" type="button">전체 삭제</button>
+    </section>
+
+    <section id="fileList" class="file-list" aria-live="polite"></section>
+
+    <section id="iosHint" class="ios-hint" hidden>
+      📱 iPhone에서는 파일을 받은 후 공유 → '사진에 저장'을 눌러주세요
+    </section>
+
+    <footer class="footer">
+      <small>모든 변환은 브라우저에서 처리되며 파일이 외부로 전송되지 않습니다.</small>
+    </footer>
+  </main>
+
+  <div id="ffmpegLoader" class="ffmpeg-loader" hidden>
+    <div class="ffmpeg-loader-card">
+      <h2>변환 엔진 준비 중</h2>
+      <p>변환 엔진을 처음 한 번만 불러옵니다 (약 25MB)</p>
+      <div class="progress"><div id="ffmpegLoaderBar" class="progress-bar"></div></div>
+      <p id="ffmpegLoaderStatus" class="loader-status">불러오는 중...</p>
+      <button id="ffmpegRetryBtn" class="btn btn-primary" type="button" hidden>다시 시도</button>
+    </div>
+  </div>
+
+  <div id="unsupported" class="unsupported" hidden>
+    <div class="unsupported-card">
+      <h2>지원하지 않는 브라우저</h2>
+      <p id="unsupportedMsg">이 브라우저는 지원하지 않습니다. 최신 Chrome, Safari, Firefox를 사용해주세요.</p>
+    </div>
+  </div>
+
+  <template id="cardTemplate">
+    <article class="card" data-state="pending">
+      <div class="card-head">
+        <div class="card-meta">
+          <h3 class="card-name"></h3>
+          <p class="card-sub">
+            <span class="badge badge-type"></span>
+            <span class="card-size"></span>
+          </p>
+        </div>
+        <button class="btn-icon card-delete" type="button" aria-label="삭제" title="삭제">✕</button>
+      </div>
+      <div class="card-body">
+        <p class="card-status">분석 중...</p>
+        <div class="progress"><div class="progress-bar"></div></div>
+        <p class="card-error" hidden></p>
+      </div>
+      <div class="card-actions" hidden>
+        <button class="btn btn-primary card-download" type="button">다운로드</button>
+        <button class="btn btn-secondary card-share" type="button" hidden>공유</button>
+        <button class="btn btn-ghost card-retry" type="button" hidden>다시 시도</button>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
