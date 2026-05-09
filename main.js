@@ -8,6 +8,7 @@ import {
   resetFFmpeg,
   isFFmpegReady,
   onLoadProgress,
+  onLoadStatus,
 } from './lib/convertAnimated.js';
 import { FileCard } from './lib/ui.js';
 import { makeZip } from './lib/zip.js';
@@ -172,25 +173,39 @@ function handleClearAll() {
   for (const card of [...state.cards]) removeCard(card);
 }
 
+let loaderStatusText = '준비 중';
+let loaderPct = 0;
+
+function renderLoaderStatus() {
+  els.ffmpegLoaderStatus.textContent = `${loaderStatusText}... ${loaderPct}%`;
+}
+
 function showFFmpegLoader(visible) {
   els.ffmpegLoader.hidden = !visible;
   if (visible) {
     els.ffmpegRetryBtn.hidden = true;
     els.ffmpegLoaderBar.style.width = '0%';
-    els.ffmpegLoaderStatus.textContent = MSG.ffmpegLoading;
+    loaderStatusText = '준비 중';
+    loaderPct = 0;
+    renderLoaderStatus();
   }
 }
 
-function showFFmpegError() {
+function showFFmpegError(message) {
   els.ffmpegLoader.hidden = false;
   els.ffmpegRetryBtn.hidden = false;
-  els.ffmpegLoaderStatus.textContent = MSG.ffmpegLoadFail;
+  els.ffmpegLoaderStatus.textContent = message || MSG.ffmpegLoadFail;
 }
 
 onLoadProgress((value) => {
-  const pct = Math.round(value * 100);
-  els.ffmpegLoaderBar.style.width = `${pct}%`;
-  els.ffmpegLoaderStatus.textContent = `${MSG.ffmpegLoading}${pct}%`;
+  loaderPct = Math.round(value * 100);
+  els.ffmpegLoaderBar.style.width = `${loaderPct}%`;
+  renderLoaderStatus();
+});
+
+onLoadStatus((text) => {
+  loaderStatusText = text;
+  renderLoaderStatus();
 });
 
 els.ffmpegRetryBtn.addEventListener('click', async () => {
@@ -199,8 +214,8 @@ els.ffmpegRetryBtn.addEventListener('click', async () => {
   try {
     await loadFFmpeg();
     showFFmpegLoader(false);
-  } catch (_) {
-    showFFmpegError();
+  } catch (err) {
+    showFFmpegError(err && err.message);
   }
 });
 
@@ -212,7 +227,7 @@ async function ensureFFmpegLoaded() {
     await loadFFmpeg();
     showFFmpegLoader(false);
   } catch (err) {
-    showFFmpegError();
+    showFFmpegError(err && err.message);
     throw err;
   }
 }
