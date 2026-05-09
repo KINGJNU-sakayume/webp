@@ -40,6 +40,9 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` HTML 속성이 클래스의 display 값에 덮이지 않도록 우선순위를 보장 */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
