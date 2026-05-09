@@ -9,6 +9,7 @@ import {
   isFFmpegReady,
   onLoadProgress,
   onLoadStatus,
+  onLoadDetail,
 } from './lib/convertAnimated.js';
 import { FileCard } from './lib/ui.js';
 import { makeZip } from './lib/zip.js';
@@ -41,6 +42,7 @@ const els = {
   ffmpegLoader: document.getElementById('ffmpegLoader'),
   ffmpegLoaderBar: document.getElementById('ffmpegLoaderBar'),
   ffmpegLoaderStatus: document.getElementById('ffmpegLoaderStatus'),
+  ffmpegLoaderDetail: document.getElementById('ffmpegLoaderDetail'),
   ffmpegRetryBtn: document.getElementById('ffmpegRetryBtn'),
   unsupported: document.getElementById('unsupported'),
   unsupportedMsg: document.getElementById('unsupportedMsg'),
@@ -188,13 +190,17 @@ function showFFmpegLoader(visible) {
     loaderStatusText = '준비 중';
     loaderPct = 0;
     renderLoaderStatus();
+    els.ffmpegLoaderDetail.textContent = '';
   }
 }
 
-function showFFmpegError(message) {
+function showFFmpegError(message, detail) {
   els.ffmpegLoader.hidden = false;
   els.ffmpegRetryBtn.hidden = false;
   els.ffmpegLoaderStatus.textContent = message || MSG.ffmpegLoadFail;
+  if (typeof detail === 'string') {
+    els.ffmpegLoaderDetail.textContent = detail;
+  }
 }
 
 onLoadProgress((value) => {
@@ -208,6 +214,10 @@ onLoadStatus((text) => {
   renderLoaderStatus();
 });
 
+onLoadDetail((text) => {
+  els.ffmpegLoaderDetail.textContent = text || '';
+});
+
 els.ffmpegRetryBtn.addEventListener('click', async () => {
   await resetFFmpeg();
   showFFmpegLoader(true);
@@ -215,7 +225,7 @@ els.ffmpegRetryBtn.addEventListener('click', async () => {
     await loadFFmpeg();
     showFFmpegLoader(false);
   } catch (err) {
-    showFFmpegError(err && err.message);
+    showFFmpegError(err && err.message, err && err.detail);
   }
 });
 
@@ -227,7 +237,7 @@ async function ensureFFmpegLoaded() {
     await loadFFmpeg();
     showFFmpegLoader(false);
   } catch (err) {
-    showFFmpegError(err && err.message);
+    showFFmpegError(err && err.message, err && err.detail);
     throw err;
   }
 }

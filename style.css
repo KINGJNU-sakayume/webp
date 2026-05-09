@@ -388,6 +388,15 @@ body {
   color: var(--text-muted);
 }
 
+.loader-detail {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  word-break: break-word;
+  min-height: 1.4em;
+}
+
 .noscript {
   background: var(--danger);
   color: #fff;
