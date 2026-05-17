@@ -307,7 +307,10 @@ async function runStatic(card, file) {
     card.setProgress(1);
     completeCard(card, blob, makeOutputName(file, 'jpg'));
   } catch (err) {
-    card.setError(err && err.message ? err.message : MSG.conversionFail);
+    card.setError(
+      err && err.message ? err.message : MSG.conversionFail,
+      err && err.detail ? err.detail : '',
+    );
     refreshBatchActions();
   }
 }
@@ -337,7 +340,10 @@ async function runAnimated(card, file, showWarn) {
     });
     completeCard(card, blob, makeOutputName(file, 'mp4'));
   } catch (err) {
-    card.setError(err && err.message ? err.message : MSG.conversionFail);
+    card.setError(
+      err && err.message ? err.message : MSG.conversionFail,
+      err && err.detail ? err.detail : '',
+    );
     refreshBatchActions();
   }
 }
