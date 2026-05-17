@@ -17,8 +17,9 @@ WebP 파일을 iOS 사진앱에서 재생 가능한 형식(MP4 · JPEG)으로 �
 
 ## GitHub Pages 배포 방법
 
-1. GitHub에서 새 리포지토리를 만듭니다 (예: `webp-converter`).
-2. 이 코드를 `main` 브랜치에 푸시합니다.
+이 앱은 iOS Safari 호환성을 위해 `@ffmpeg/ffmpeg`의 워커 파일을 **same-origin**에서 제공해야 합니다. 이를 위해 GitHub Actions 워크플로우가 배포 시 자동으로 vendor 파일을 받아 페이지에 함께 올립니다.
+
+1. GitHub에서 새 리포지토리를 만들고 이 코드를 `main` 브랜치에 푸시합니다.
 
    ```bash
    git init
@@ -29,11 +30,14 @@ WebP 파일을 iOS 사진앱에서 재생 가능한 형식(MP4 · JPEG)으로 �
    git push -u origin main
    ```
 
-3. 리포지토리 → **Settings** → **Pages**로 이동합니다.
-4. **Source**를 `Deploy from a branch`로 두고 **Branch**를 `main`, 폴더를 `/ (root)`로 선택한 뒤 **Save**합니다.
-5. 약 1분 후 `https://<username>.github.io/<repo-name>/` 에서 앱을 사용할 수 있습니다.
+2. 리포지토리 → **Settings** → **Pages**로 이동합니다.
+3. **Source**를 **`GitHub Actions`** 로 선택합니다. (기존 `Deploy from a branch` 아님)
+4. `main` 브랜치에 push가 일어나면 `.github/workflows/deploy.yml`이 자동 실행되어 unpkg에서 vendor 파일을 받아 Pages에 배포합니다.
+5. Actions 탭에서 빌드 성공을 확인한 뒤 `https://<username>.github.io/<repo-name>/` 에서 앱을 사용할 수 있습니다.
 
-> 참고: 리포지토리 루트의 `.nojekyll` 파일은 Jekyll이 일부 파일을 누락하지 않도록 합니다. 이 파일은 배포에 반드시 필요하니 삭제하지 마세요.
+> 참고: `.nojekyll` 파일은 Jekyll이 일부 파일을 누락하지 않도록 합니다. 삭제하지 마세요.
+>
+> 참고: `vendor/` 디렉토리는 `.gitignore`로 무시되며, 빌드 시점에 워크플로우가 생성합니다. 직접 커밋할 필요는 없습니다.
 
 ## 제한 사항
 
