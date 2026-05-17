@@ -20,15 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download self-hosted ffmpeg vendor files
-        run: |
-          mkdir -p vendor
-          curl -fL --retry 3 --retry-delay 2 -o vendor/ffmpeg.js \
-            https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js
-          curl -fL --retry 3 --retry-delay 2 -o vendor/814.ffmpeg.js \
-            https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/814.ffmpeg.js
-          ls -lh vendor/
-
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

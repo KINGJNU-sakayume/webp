@@ -9,8 +9,7 @@
   <meta name="description" content="WebP 파일을 iOS 사진앱에서 재생 가능한 형식(MP4·JPEG)으로 변환합니다." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📷%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="./style.css" />
-  <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/index.js" crossorigin="anonymous"></script>
-  <script src="./vendor/ffmpeg.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.5/build/mp4-muxer.min.js" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -60,17 +59,6 @@
       <small>모든 변환은 브라우저에서 처리되며 파일이 외부로 전송되지 않습니다.</small>
     </footer>
   </main>
-
-  <div id="ffmpegLoader" class="ffmpeg-loader" hidden>
-    <div class="ffmpeg-loader-card">
-      <h2>변환 엔진 준비 중</h2>
-      <p>변환 엔진을 처음 한 번만 불러옵니다 (약 25MB)</p>
-      <div class="progress"><div id="ffmpegLoaderBar" class="progress-bar"></div></div>
-      <p id="ffmpegLoaderStatus" class="loader-status">불러오는 중...</p>
-      <p id="ffmpegLoaderDetail" class="loader-detail"></p>
-      <button id="ffmpegRetryBtn" class="btn btn-primary" type="button" hidden>다시 시도</button>
-    </div>
-  </div>
 
   <div id="unsupported" class="unsupported" hidden>
     <div class="unsupported-card">

@@ -352,7 +352,6 @@ body {
   font-size: 12px;
 }
 
-.ffmpeg-loader,
 .unsupported {
   position: fixed;
   inset: 0;
@@ -365,7 +364,6 @@ body {
   z-index: 100;
 }
 
-.ffmpeg-loader-card,
 .unsupported-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -377,33 +375,15 @@ body {
   text-align: center;
 }
 
-.ffmpeg-loader-card h2,
 .unsupported-card h2 {
   margin: 0 0 8px;
   font-size: 18px;
 }
 
-.ffmpeg-loader-card p,
 .unsupported-card p {
   margin: 0 0 16px;
   color: var(--text-muted);
   font-size: 14px;
-}
-
-.ffmpeg-loader-card .progress { margin: 16px 0 8px; }
-
-.loader-status {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.loader-detail {
-  margin: 4px 0 0;
-  font-size: 11px;
-  color: var(--text-muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  word-break: break-word;
-  min-height: 1.4em;
 }
 
 .noscript {
