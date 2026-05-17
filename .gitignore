@@ -1,3 +1,0 @@
-# self-hosted ffmpeg vendor files — populated by the deploy workflow,
-# not committed to the repo.
-vendor/

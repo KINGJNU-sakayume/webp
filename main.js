@@ -3,13 +3,8 @@
 import { detectWebP } from './lib/detect.js';
 import { convertStaticToJpeg } from './lib/convertStatic.js';
 import {
-  loadFFmpeg,
   convertAnimatedToMp4,
-  resetFFmpeg,
-  isFFmpegReady,
-  onLoadProgress,
-  onLoadStatus,
-  onLoadDetail,
+  checkAnimatedSupport,
 } from './lib/convertAnimated.js';
 import { FileCard } from './lib/ui.js';
 import { makeZip } from './lib/zip.js';
@@ -23,11 +18,9 @@ const MSG = {
   corrupted: '파일이 손상되었습니다',
   tooLargeStatic: '용량이 너무 큽니다 (정지 이미지는 최대 50MB)',
   tooLargeAnimated: '용량이 너무 큽니다 (애니메이션은 최대 20MB)',
-  warnLargeAnimated: '큰 애니메이션 파일은 변환에 시간이 걸리거나 실패할 수 있습니다',
-  ffmpegLoadFail: '변환 엔진을 불러오지 못했습니다. 인터넷 연결을 확인하고 다시 시도해주세요',
-  ffmpegLoading: '불러오는 중... ',
+  warnLargeAnimated: '큰 애니메이션 파일은 변환에 시간이 걸릴 수 있습니다',
   conversionFail: '변환에 실패했습니다',
-  unsupported: '이 브라우저는 지원하지 않습니다. 최신 Chrome, Safari, Firefox를 사용해주세요',
+  unsupported: '이 브라우저는 지원하지 않습니다. 최신 Chrome, Safari 또는 Edge를 사용해주세요',
 };
 
 const els = {
@@ -39,11 +32,6 @@ const els = {
   downloadAllBtn: document.getElementById('downloadAllBtn'),
   clearAllBtn: document.getElementById('clearAllBtn'),
   iosHint: document.getElementById('iosHint'),
-  ffmpegLoader: document.getElementById('ffmpegLoader'),
-  ffmpegLoaderBar: document.getElementById('ffmpegLoaderBar'),
-  ffmpegLoaderStatus: document.getElementById('ffmpegLoaderStatus'),
-  ffmpegLoaderDetail: document.getElementById('ffmpegLoaderDetail'),
-  ffmpegRetryBtn: document.getElementById('ffmpegRetryBtn'),
   unsupported: document.getElementById('unsupported'),
   unsupportedMsg: document.getElementById('unsupportedMsg'),
 };
@@ -51,11 +39,9 @@ const els = {
 const state = {
   cards: [],
   animatedQueue: Promise.resolve(),
-  ffmpegLoadStarted: false,
 };
 
 function checkBrowserSupport() {
-  if (typeof WebAssembly !== 'object') return MSG.unsupported;
   if (typeof FileReader !== 'function') return MSG.unsupported;
   if (!('createElement' in document)) return MSG.unsupported;
   const canvas = document.createElement('canvas');
@@ -175,73 +161,6 @@ function handleClearAll() {
   for (const card of [...state.cards]) removeCard(card);
 }
 
-let loaderStatusText = '준비 중';
-let loaderPct = 0;
-
-function renderLoaderStatus() {
-  els.ffmpegLoaderStatus.textContent = `${loaderStatusText}... ${loaderPct}%`;
-}
-
-function showFFmpegLoader(visible) {
-  els.ffmpegLoader.hidden = !visible;
-  if (visible) {
-    els.ffmpegRetryBtn.hidden = true;
-    els.ffmpegLoaderBar.style.width = '0%';
-    loaderStatusText = '준비 중';
-    loaderPct = 0;
-    renderLoaderStatus();
-    els.ffmpegLoaderDetail.textContent = '';
-  }
-}
-
-function showFFmpegError(message, detail) {
-  els.ffmpegLoader.hidden = false;
-  els.ffmpegRetryBtn.hidden = false;
-  els.ffmpegLoaderStatus.textContent = message || MSG.ffmpegLoadFail;
-  if (typeof detail === 'string') {
-    els.ffmpegLoaderDetail.textContent = detail;
-  }
-}
-
-onLoadProgress((value) => {
-  loaderPct = Math.round(value * 100);
-  els.ffmpegLoaderBar.style.width = `${loaderPct}%`;
-  renderLoaderStatus();
-});
-
-onLoadStatus((text) => {
-  loaderStatusText = text;
-  renderLoaderStatus();
-});
-
-onLoadDetail((text) => {
-  els.ffmpegLoaderDetail.textContent = text || '';
-});
-
-els.ffmpegRetryBtn.addEventListener('click', async () => {
-  await resetFFmpeg();
-  showFFmpegLoader(true);
-  try {
-    await loadFFmpeg();
-    showFFmpegLoader(false);
-  } catch (err) {
-    showFFmpegError(err && err.message, err && err.detail);
-  }
-});
-
-async function ensureFFmpegLoaded() {
-  if (isFFmpegReady()) return;
-  state.ffmpegLoadStarted = true;
-  showFFmpegLoader(true);
-  try {
-    await loadFFmpeg();
-    showFFmpegLoader(false);
-  } catch (err) {
-    showFFmpegError(err && err.message, err && err.detail);
-    throw err;
-  }
-}
-
 function makeOutputName(input, ext) {
   return `${basenameWithoutExt(input.name)}.${ext}`;
 }
@@ -323,14 +242,6 @@ function enqueueAnimated(card, file) {
 
 async function runAnimated(card, file, showWarn) {
   if (showWarn) card.setStatusText(MSG.warnLargeAnimated);
-
-  try {
-    await ensureFFmpegLoaded();
-  } catch (_) {
-    card.setError(MSG.ffmpegLoadFail);
-    refreshBatchActions();
-    return;
-  }
 
   card.setState('converting');
   card.setProgress(0);
@@ -443,6 +354,15 @@ function init() {
   }
   wireDropzone();
   wireBatchActions();
+  // Note: animated WebP support is checked at conversion time inside
+  // convertAnimatedToMp4 (it needs ImageDecoder + VideoEncoder + Mp4Muxer).
+  // Static WebP works in all browsers that pass the basic check above.
+  // We surface a clear per-file Korean error if WebCodecs is missing rather
+  // than blocking the whole app, so static still works on Firefox etc.
+  if (checkAnimatedSupport() !== null) {
+    // eslint-disable-next-line no-console
+    console.warn('[webp converter] animated WebP support requires WebCodecs:', checkAnimatedSupport());
+  }
 }
 
 init();
